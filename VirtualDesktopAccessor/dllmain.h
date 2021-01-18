@@ -110,7 +110,7 @@ int DllExport GetDesktopCount()
 	_RegisterService();
 
 	IObjectArray *pObjectArray = nullptr;
-	HRESULT hr = pDesktopManagerInternal->GetDesktops(&pObjectArray);
+	HRESULT hr = pDesktopManagerInternal->GetDesktops(nullptr, &pObjectArray);
 
 	if (SUCCEEDED(hr))
 	{
@@ -127,7 +127,7 @@ int DllExport GetDesktopNumberById(GUID desktopId) {
 	_RegisterService();
 
 	IObjectArray *pObjectArray = nullptr;
-	HRESULT hr = pDesktopManagerInternal->GetDesktops(&pObjectArray);
+	HRESULT hr = pDesktopManagerInternal->GetDesktops(nullptr, &pObjectArray);
 	int found = -1;
 
 	if (SUCCEEDED(hr))
@@ -166,7 +166,7 @@ IVirtualDesktop* _GetDesktopByNumber(int number) {
 	_RegisterService();
 
 	IObjectArray *pObjectArray = nullptr;
-	HRESULT hr = pDesktopManagerInternal->GetDesktops(&pObjectArray);
+	HRESULT hr = pDesktopManagerInternal->GetDesktops(nullptr, &pObjectArray);
 	IVirtualDesktop* found = nullptr;
 
 	if (SUCCEEDED(hr))
@@ -293,7 +293,7 @@ IVirtualDesktop* GetCurrentDesktop() {
 		return nullptr;
 	}
 	IVirtualDesktop* found = nullptr;
-	pDesktopManagerInternal->GetCurrentDesktop(&found);
+	pDesktopManagerInternal->GetCurrentDesktop(nullptr, &found);
 	return found;
 }
 
@@ -317,7 +317,7 @@ void DllExport GoToDesktopNumber(int number) {
 	oldDesktop->Release();
 
 	IObjectArray *pObjectArray = nullptr;
-	HRESULT hr = pDesktopManagerInternal->GetDesktops(&pObjectArray);
+	HRESULT hr = pDesktopManagerInternal->GetDesktops(nullptr, &pObjectArray);
 	int found = -1;
 
 	if (SUCCEEDED(hr))
@@ -337,7 +337,7 @@ void DllExport GoToDesktopNumber(int number) {
 				GUID id = { 0 };
 				pDesktop->GetID(&id);
 				if (i == number) {
-					pDesktopManagerInternal->SwitchDesktop(pDesktop);
+					pDesktopManagerInternal->SwitchDesktop(nullptr, pDesktop);
 				}
 
 				pDesktop->Release();
@@ -466,6 +466,7 @@ public:
 		}
 		return E_NOINTERFACE;
 	}
+
 	virtual ULONG STDMETHODCALLTYPE AddRef() override
 	{
 		return InterlockedIncrement(&_referenceCount);
@@ -505,6 +506,7 @@ public:
 		_PostMessageToListeners(VDA_ViewVirtualDesktopChanged, 0, 0);
 		return S_OK;
 	}
+
 	virtual HRESULT STDMETHODCALLTYPE CurrentVirtualDesktopChanged(
 		IVirtualDesktop *pDesktopOld,
 		IVirtualDesktop *pDesktopNew) override
@@ -521,6 +523,22 @@ public:
 		_PostMessageToListeners(VDA_CurrentVirtualDesktopChanged, GetDesktopNumberById(act.oldDesktopGuid), GetDesktopNumberById(act.newDesktopGuid));
 		return S_OK;
 	}
+
+    virtual HRESULT __stdcall VirtualDesktopIsPerMonitorChanged(BOOL isPerMonitor) override {
+        return S_OK;
+    }
+    
+    virtual HRESULT __stdcall VirtualDesktopMoved(IVirtualDesktop * pDesktop, UINT64 oldIndex, UINT64 newIndex) override {
+        return S_OK;
+    }
+
+    virtual HRESULT __stdcall VirtualDesktopNameChanged(IVirtualDesktop * pDesktop, HSTRING name) override {
+        return S_OK;
+    }
+
+    virtual HRESULT __stdcall VirtualDesktopWallpaperChanged(IVirtualDesktop * pDesktop, HSTRING name) override {
+        return S_OK;
+    }
 };
 
 void _RegisterDesktopNotifications() {

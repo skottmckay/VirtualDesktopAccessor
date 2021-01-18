@@ -24,9 +24,8 @@ const CLSID CLSID_VirtualDesktopPinnedApps = {
 };
 
 // IID same as in MIDL IVirtualDesktopNotification
-// C179334C-4295-40D3-BEA1-C654D965605A
 const IID IID_IVirtualDesktopNotification = {
-	0xC179334C, 0x4295, 0x40D3, { 0xBE, 0xA1, 0xC6, 0x54, 0xD9, 0x65, 0x60, 0x5A }
+    0xCD403E52, 0xDEED, 0x4C13, { 0xB4, 0x37, 0xB9, 0x83, 0x80, 0xF2, 0xB1, 0xE8 }
 };
 
 // Ignore following API's:
@@ -38,9 +37,7 @@ const IID IID_IVirtualDesktopNotification = {
 #define APPLICATION_VIEW_CLOAK_TYPE UINT
 #define IApplicationViewPosition UINT
 
-// Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Interface\{871F602A-2B58-42B4-8C4B-6C43D642C06F}
-// Found with searching "IApplicationView"
-DECLARE_INTERFACE_IID_(IApplicationView, IInspectable, "871F602A-2B58-42B4-8C4B-6C43D642C06F")
+DECLARE_INTERFACE_IID_(IApplicationView, IInspectable, "372E1D3B-38D3-42E4-A15B-8AB2B178F513")
 {
 	/*** IUnknown methods ***/
 	STDMETHOD(QueryInterface)(THIS_ REFIID riid, LPVOID FAR* ppvObject) PURE;
@@ -135,8 +132,7 @@ DECLARE_INTERFACE_IID_(IVirtualDesktopPinnedApps, IUnknown, "4ce81583-1e4c-4632-
 #define IImmersiveApplication UINT
 #define IApplicationViewChangeListener UINT
 
-// In registry: Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Interface\{2C08ADF0-A386-4B35-9250-0FE183476FCC}
-DECLARE_INTERFACE_IID_(IApplicationViewCollection, IUnknown, "2C08ADF0-A386-4B35-9250-0FE183476FCC")
+DECLARE_INTERFACE_IID_(IApplicationViewCollection, IUnknown, "1841C6D7-4F9D-42C0-AF41-8747538F10E5")
 {
 	/*** IUnknown methods ***/
 	STDMETHOD(QueryInterface)(THIS_ REFIID riid, LPVOID FAR* ppvObject) PURE;
@@ -151,14 +147,14 @@ DECLARE_INTERFACE_IID_(IApplicationViewCollection, IUnknown, "2C08ADF0-A386-4B35
 	STDMETHOD(GetViewForApplication)(THIS_ IImmersiveApplication*, IApplicationView**) PURE;
 	STDMETHOD(GetViewForAppUserModelId)(THIS_ PCWSTR, IApplicationView**) PURE;
 	STDMETHOD(GetViewInFocus)(THIS_ IApplicationView**) PURE;
-	STDMETHOD(RefreshCollection)(THIS) PURE;
+    STDMETHOD(TryGetLastActiveVisibleView)(IApplicationView** ) PURE;
+    STDMETHOD(RefreshCollection)(THIS) PURE;
 	STDMETHOD(RegisterForApplicationViewChanges)(THIS_ IApplicationViewChangeListener*, DWORD*) PURE;
-	STDMETHOD(RegisterForApplicationViewPositionChanges)(THIS_ IApplicationViewChangeListener*, DWORD*) PURE;
+	// STDMETHOD(RegisterForApplicationViewPositionChanges)(THIS_ IApplicationViewChangeListener*, DWORD*) PURE;
 	STDMETHOD(UnregisterForApplicationViewChanges)(THIS_ DWORD) PURE;
 };
 
-// In registry: Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Interface\{FF72FFDD-BE7E-43FC-9C03-AD81681E88E4}
-MIDL_INTERFACE("FF72FFDD-BE7E-43FC-9C03-AD81681E88E4")
+MIDL_INTERFACE("536D3495-B208-4CC9-AE26-DE8111275BF8")
 IVirtualDesktop : public IUnknown
 {
 public:
@@ -168,6 +164,9 @@ public:
 
 	virtual HRESULT STDMETHODCALLTYPE GetID(
 		GUID *pGuid) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE GetMonitor(
+        HMONITOR *monitor) = 0;
 };
 
 enum AdjacentDesktop
@@ -177,12 +176,12 @@ enum AdjacentDesktop
 };
 
 
-// Old: AF8DA486-95BB-4460-B3B7-6E7A6B2962B5
-MIDL_INTERFACE("f31574d6-b682-4cdc-bd56-1827860abec6")
+MIDL_INTERFACE("b2f925b9-5a0f-4d2e-9f4d-2b1507593c10")
 IVirtualDesktopManagerInternal : public IUnknown
 {
 public:
 	virtual HRESULT STDMETHODCALLTYPE GetCount(
+        HMONITOR monitor,
 		UINT *pCount) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE MoveViewToDesktop(
@@ -195,9 +194,11 @@ public:
 		int *pfCanViewMoveDesktops) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE GetCurrentDesktop(
+        HMONITOR monitor,
 		IVirtualDesktop** desktop) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE GetDesktops(
+        HMONITOR monitor,
 		IObjectArray **ppDesktops) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE GetAdjacentDesktop(
@@ -206,9 +207,11 @@ public:
 		IVirtualDesktop **ppAdjacentDesktop) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE SwitchDesktop(
+        HMONITOR monitor,
 		IVirtualDesktop *pDesktop) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE CreateDesktopW(
+        HMONITOR monitor,
 		IVirtualDesktop **ppNewDesktop) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE RemoveDesktop(
@@ -221,7 +224,6 @@ public:
 		IVirtualDesktop **ppDesktop) = 0;
 };
 
-// aa509086-5ca9-4c25-8f95-589d3c07b48a ?
 MIDL_INTERFACE("a5cd92ff-29be-454c-8d04-d82879fb3f1b")
 IVirtualDesktopManager : public IUnknown
 {
@@ -239,7 +241,7 @@ public:
 		/* [in] */ __RPC__in REFGUID desktopId) = 0;
 };
 
-MIDL_INTERFACE("C179334C-4295-40D3-BEA1-C654D965605A")
+MIDL_INTERFACE("CD403E52-DEED-4C13-B437-B98380F2B1E8")
 IVirtualDesktopNotification : public IUnknown
 {
 public:
@@ -258,12 +260,28 @@ public:
 		IVirtualDesktop *pDesktopDestroyed,
 		IVirtualDesktop *pDesktopFallback) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE ViewVirtualDesktopChanged(
+    virtual HRESULT STDMETHODCALLTYPE VirtualDesktopIsPerMonitorChanged(
+        BOOL isPerMonitor) = 0;
+    
+    virtual HRESULT STDMETHODCALLTYPE VirtualDesktopMoved(
+        IVirtualDesktop *pDesktop,
+        UINT64 oldIndex, 
+        UINT64 newIndex) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE VirtualDesktopNameChanged(
+        IVirtualDesktop *pDesktop,
+        HSTRING name) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE ViewVirtualDesktopChanged(
 		IApplicationView *pView) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE CurrentVirtualDesktopChanged(
 		IVirtualDesktop *pDesktopOld,
 		IVirtualDesktop *pDesktopNew) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE VirtualDesktopWallpaperChanged(
+        IVirtualDesktop *pDesktop,
+        HSTRING name) = 0;
 
 };
 
